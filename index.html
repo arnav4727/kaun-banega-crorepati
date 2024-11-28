@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kaun Banega Crorepati</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        input {
+            width: 80%;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 1em;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 1em;
+            background: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .question {
+            margin: 20px 0;
+            font-size: 1.2em;
+        }
+        .options button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 1em;
+            background: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: transform 0.3s ease, background-color 0.3s ease;
+        }
+        .options button:hover {
+            background: #0056b3;
+            transform: scale(1.05);
+        }
+        .score {
+            text-align: center;
+            font-size: 1.2em;
+            margin: 20px 0;
+        }
+        .restart button {
+            background: #28a745;
+        }
+        .restart button:hover {
+            background: #218838;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="welcome-screen">
+    <h1>WELCOME TO KAUN BANEGA CROREPATI</h1>
+    <label for="name">WHAT IS YOUR NAME SIR/MAM?</label><br>
+    <input type="text" id="name" placeholder="Enter your name"><br>
+    <button onclick="startGame()">START GAME</button>
+</div>
+
+<div class="container" id="game-screen" style="display: none;">
+    <h1>Kaun Banega Crorepati</h1>
+    <div id="game">
+        <div class="question" id="question">Loading question...</div>
+        <div class="options" id="options"></div>
+        <div class="score" id="score">Score: 0</div>
+    </div>
+    <div class="restart" id="restart" style="display: none;">
+        <button onclick="restartGame()">Restart Game</button>
+    </div>
+</div>
+
+<script>
+    let userName = '';
+    const questions = [
+        { question: "What is the largest desert in the world?", options: ["THAR DESERT", "SAHARA DESERT", "GOBI DESERT", "NAMIB DESERT"], answer: 1 },
+        { question: "Who is known as the Father of the Indian Constitution?", options: ["DR. B.R. AMBEDKAR", "BAL GANGADHAR TILAK", "MAHATMA GANDHI", "DR. RAJENDRA PRASAD"], answer: 0 },
+        { question: "What is the capital of Australia?", options: ["SYDNEY", "CANBERRA", "MELBOURNE", "PERTH"], answer: 1 },
+        { question: "Which planet is known as the Red Planet?", options: ["VENUS", "JUPITER", "MARS", "MERCURY"], answer: 2 },
+        { question: "What is the chemical symbol for water?", options: ["H2O", "O2", "CO2", "H2SO4"], answer: 0 },
+    ];
+
+    let currentQuestionIndex = 0;
+    let score = 0;
+
+    function startGame() {
+        const nameInput = document.getElementById("name");
+        userName = nameInput.value.trim();
+
+        if (!userName) {
+            alert("Please enter your name to start the game.");
+            return;
+        }
+
+        // Hide welcome screen and show game screen
+        document.getElementById("welcome-screen").style.display = "none";
+        document.getElementById("game-screen").style.display = "block";
+
+        // Load the game
+        loadGame();
+    }
+
+    function loadGame() {
+        const questionElement = document.getElementById("question");
+        const optionsElement = document.getElementById("options");
+        const scoreElement = document.getElementById("score");
+        const restartElement = document.getElementById("restart");
+
+        if (currentQuestionIndex < questions.length) {
+            const currentQuestion = questions[currentQuestionIndex];
+            questionElement.textContent = `Question ${currentQuestionIndex + 1}: ${currentQuestion.question}`;
+            optionsElement.innerHTML = "";
+
+            currentQuestion.options.forEach((option, index) => {
+                const button = document.createElement("button");
+                button.textContent = option;
+                button.onclick = () => checkAnswer(index);
+                optionsElement.appendChild(button);
+            });
+
+            scoreElement.textContent = `Score: ${score}`;
+        } else {
+            // End game
+            questionElement.textContent = `Congratulations ${userName}! You've completed the game.`;
+            optionsElement.innerHTML = "";
+            restartElement.style.display = "block";
+        }
+    }
+
+    function checkAnswer(selectedOption) {
+        const currentQuestion = questions[currentQuestionIndex];
+        if (selectedOption === currentQuestion.answer) {
+            score += 1000;
+            alert("Correct answer! You won 1000.");
+        } else {
+            alert(`Wrong answer, ${userName}! Game over.`);
+            endGame();
+            return;
+        }
+        currentQuestionIndex++;
+        loadGame();
+    }
+
+    function endGame() {
+        document.getElementById("question").textContent = `Game Over, ${userName}. Better luck next time!`;
+        document.getElementById("options").innerHTML = "";
+        document.getElementById("restart").style.display = "block";
+    }
+
+    function restartGame() {
+        currentQuestionIndex = 0;
+        score = 0;
+        document.getElementById("restart").style.display = "none";
+        loadGame();
+    }
+</script>
+
+</body>
+</html>
