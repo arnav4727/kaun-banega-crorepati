@@ -7,25 +7,36 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
             margin: 0;
-            padding: 20px;
+            padding: 0;
+            background-color: #f7f7f7;
+            overflow-x: hidden; /* Prevent horizontal scrolling */
+        }
+        body::before {
+            content: "";
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100vw;
+            height: 100vh;
+            background: url('kbc23_int_14aug_landscape_thumb.jpg') no-repeat center center / cover;
+            z-index: -1;
+            opacity: 0.5;
         }
         .container {
             max-width: 600px;
             margin: 0 auto;
-            background: #fff;
+            background: rgba(255, 255, 255, 0.9);
             padding: 20px;
             border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
             text-align: center;
         }
         h1 {
-            text-align: center;
             color: #333;
         }
-        input {
-            width: 80%;
+        input, button {
             padding: 10px;
             margin: 10px 0;
             font-size: 1em;
@@ -33,12 +44,8 @@
             border-radius: 5px;
         }
         button {
-            padding: 10px 20px;
-            font-size: 1em;
             background: #007BFF;
             color: white;
-            border: none;
-            border-radius: 5px;
             cursor: pointer;
         }
         button:hover {
@@ -51,22 +58,16 @@
         .options button {
             display: block;
             width: 100%;
-            padding: 10px;
             margin: 10px 0;
-            font-size: 1em;
             background: #007BFF;
             color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
             transition: transform 0.3s ease, background-color 0.3s ease;
         }
         .options button:hover {
             background: #0056b3;
-            transform: scale(1.05);
+            transform: scale(1.1);
         }
         .score {
-            text-align: center;
             font-size: 1.2em;
             margin: 20px 0;
         }
@@ -76,14 +77,71 @@
         .restart button:hover {
             background: #218838;
         }
+        .message {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            font-size: 1.2em;
+            border-radius: 10px;
+            animation: fadeInOut 2s ease-in-out;
+        }
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0; }
+            50% { opacity: 1; }
+        }
+        .party-poppers {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: none;
+        }
+        .party-popper {
+            font-size: 2em;
+            position: absolute;
+            animation: popperRise 2s ease-out forwards;
+        }
+        @keyframes popperRise {
+            from { transform: translateY(0); opacity: 1; }
+            to { transform: translateY(-200px); opacity: 0; }
+        }
+        @media (max-width: 600px) {
+            body {
+                font-size: 90%;
+            }
+            .container {
+                width: 90%;
+                padding: 10px;
+            }
+            .party-popper {
+                font-size: 1.5em;
+            }
+        }
     </style>
 </head>
 <body>
 
 <div class="container" id="welcome-screen">
-    <h1>WELCOME TO KAUN BANEGA CROREPATI</h1>
+    <h1>WELCOME TO KAUN BANega CROREPATI</h1>
     <label for="name">WHAT IS YOUR NAME SIR/MAM?</label><br>
     <input type="text" id="name" placeholder="Enter your name"><br>
+    <button onclick="goToRules()">NEXT</button>
+</div>
+
+<div class="container" id="rules-screen" style="display: none;">
+    <h1>Hello <span id="user-name"></span>!</h1>
+    <p>Welcome to Kaun Banega Crorepati!</p>
+    <p><strong>Rules:</strong></p>
+    <ul style="text-align: left;">
+        <li>You will be presented with 15 questions.</li>
+        <li>Each correct answer earns you ₹1000.</li>
+        <li>Choose carefully—one wrong answer and the game is over!</li>
+    </ul>
     <button onclick="startGame()">START GAME</button>
 </div>
 
@@ -92,12 +150,15 @@
     <div id="game">
         <div class="question" id="question">Loading question...</div>
         <div class="options" id="options"></div>
-        <div class="score" id="score">Score: 0</div>
+        <div class="score" id="score">Score: ₹0</div>
     </div>
     <div class="restart" id="restart" style="display: none;">
         <button onclick="restartGame()">Restart Game</button>
     </div>
 </div>
+
+<div id="message" class="message"></div>
+<div id="party-poppers" class="party-poppers"></div>
 
 <script>
     let userName = '';
@@ -107,25 +168,38 @@
         { question: "What is the capital of Australia?", options: ["SYDNEY", "CANBERRA", "MELBOURNE", "PERTH"], answer: 1 },
         { question: "Which planet is known as the Red Planet?", options: ["VENUS", "JUPITER", "MARS", "MERCURY"], answer: 2 },
         { question: "What is the chemical symbol for water?", options: ["H2O", "O2", "CO2", "H2SO4"], answer: 0 },
+        { question: "Which is the smallest continent in the world?", options: ["EUROPE", "AUSTRALIA", "ANTARCTICA", "SOUTH AMERICA"], answer: 1 },
+        { question: "Which is the national bird of India?", options: ["PEACOCK", "PARROT", "CROW", "PIGEON"], answer: 0 },
+        { question: "What is the square root of 64?", options: ["6", "7", "8", "9"], answer: 2 },
+        { question: "Who was the first President of India?", options: ["DR. B.R. AMBEDKAR", "DR. RAJENDRA PRASAD", "MAULANA ABUL KALAM AZAD", "SARDAR PATEL"], answer: 1 },
+        { question: "Which is the largest ocean in the world?", options: ["ATLANTIC", "INDIAN", "PACIFIC", "ARCTIC"], answer: 2 },
+        { question: "What is the national flower of India?", options: ["ROSE", "LOTUS", "LILY", "JASMINE"], answer: 1 },
+        { question: "Which is the longest river in the world?", options: ["NILE", "AMAZON", "GANGA", "MISSISSIPPI"], answer: 0 },
+        { question: "Which is the largest planet in the solar system?", options: ["EARTH", "SATURN", "JUPITER", "URANUS"], answer: 2 },
+        { question: "What is the capital of Japan?", options: ["TOKYO", "OSAKA", "KYOTO", "NAGOYA"], answer: 0 },
+        { question: "Which metal is used to make coins?", options: ["SILVER", "GOLD", "COPPER", "ALUMINIUM"], answer: 2 },
     ];
 
     let currentQuestionIndex = 0;
     let score = 0;
 
-    function startGame() {
+    function goToRules() {
         const nameInput = document.getElementById("name");
         userName = nameInput.value.trim();
 
         if (!userName) {
-            alert("Please enter your name to start the game.");
+            alert("Please enter your name to proceed.");
             return;
         }
 
-        // Hide welcome screen and show game screen
         document.getElementById("welcome-screen").style.display = "none";
-        document.getElementById("game-screen").style.display = "block";
+        document.getElementById("rules-screen").style.display = "block";
+        document.getElementById("user-name").textContent = userName;
+    }
 
-        // Load the game
+    function startGame() {
+        document.getElementById("rules-screen").style.display = "none";
+        document.getElementById("game-screen").style.display = "block";
         loadGame();
     }
 
@@ -147,10 +221,9 @@
                 optionsElement.appendChild(button);
             });
 
-            scoreElement.textContent = `Score: ${score}`;
+            scoreElement.textContent = `Score: ₹${score}`;
         } else {
-            // End game
-            questionElement.textContent = `Congratulations ${userName}! You've completed the game.`;
+            questionElement.textContent = `Congratulations ${userName}! You've completed the game with a total of ₹${score}.`;
             optionsElement.innerHTML = "";
             restartElement.style.display = "block";
         }
@@ -158,12 +231,37 @@
 
     function checkAnswer(selectedOption) {
         const currentQuestion = questions[currentQuestionIndex];
+        const messageElement = document.getElementById("message");
+        const partyPoppersContainer = document.getElementById("party-poppers");
+
         if (selectedOption === currentQuestion.answer) {
             score += 1000;
-            alert("Correct answer! You won 1000.");
+            messageElement.textContent = "Correct Answer!";
+            messageElement.style.display = "block";
+
+            // Show party poppers
+            partyPoppersContainer.innerHTML = "";
+            for (let i = 0; i < 30; i++) {
+                const popper = document.createElement("div");
+                popper.textContent = "🎉";
+                popper.className = "party-popper";
+                popper.style.left = `${Math.random() * 100 - 50}%`;
+                popper.style.top = `${Math.random() * 100 - 50}px`;
+                partyPoppersContainer.appendChild(popper);
+            }
+            partyPoppersContainer.style.display = "block";
+
+            setTimeout(() => {
+                messageElement.style.display = "none";
+                partyPoppersContainer.style.display = "none";
+            }, 2000);
         } else {
-            alert(`Wrong answer, ${userName}! Game over.`);
-            endGame();
+            messageElement.textContent = `Wrong Answer! Game Over, ${userName}.`;
+            messageElement.style.display = "block";
+            setTimeout(() => {
+                messageElement.style.display = "none";
+                endGame();
+            }, 2000);
             return;
         }
         currentQuestionIndex++;
